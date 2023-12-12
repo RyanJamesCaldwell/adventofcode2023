@@ -35,17 +35,26 @@ func getGameIdFromLine(line string) int {
 	return intId
 }
 
+func (g *Game) PopulateFromLine(line string) {
+}
+
 func (g *Game) String() string {
 	return fmt.Sprintf("Game %d: %d, %d, %d", g.ID, g.Blue, g.Green, g.Red)
 }
 
-func main() {
-	lines := fileReader.GetLines()
+func buildGames(lines []string) []Game {
 	games := make([]Game, len(lines))
 
 	for idx, line := range lines {
 		games[idx] = lineToGame(line)
 	}
+
+	return games
+}
+
+func main() {
+	lines := fileReader.GetLines()
+	games := buildGames(lines)
 
 	for _, game := range games {
 		fmt.Println(game.String())
