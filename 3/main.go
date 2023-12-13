@@ -9,8 +9,6 @@ import (
 	"github.com/ryanjamescaldwell/adventofcode2023/fileReader"
 )
 
-var symbols = []string{"*", "#", "$", "+", "%", "-", "=", "@", "&", "/"}
-
 type Number struct {
 	StartIdx int
 	EndIdx   int
