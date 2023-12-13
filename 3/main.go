@@ -81,12 +81,35 @@ func (n *Number) DoesBorderSymbol(syms []Symbol) bool {
 				return true
 			}
 		}
-		// Check if the symbol is directly above or below a singular number
 		if n.StartIdx == n.EndIdx && abs(sym.RowIdx-n.RowIdx) == 1 && sym.ColIdx == n.StartIdx {
 			return true
 		}
 	}
 	return false
+}
+
+// gears are symbols that are adjacent to exactly two part numbers
+func getGears(nums []Number, syms []Symbol) [][]Number {
+	// every pair of gears, e.g. first/second, third/fourth, etc. are the adjacent Numbers for a given Symbol
+	// [ [first, second], [third, fourth], ... ]
+	gears := [][]Number{}
+
+	for _, sym := range syms {
+
+		adjacentNums := []Number{}
+
+		for _, num := range nums {
+			if num.DoesBorderSymbol([]Symbol{sym}) {
+				adjacentNums = append(adjacentNums, num)
+			}
+
+		}
+		if len(adjacentNums) == 2 {
+			gears = append(gears, adjacentNums)
+		}
+	}
+
+	return gears
 }
 
 func abs(x int) int {
@@ -117,4 +140,13 @@ func main() {
 		sum += num.Value
 	}
 	fmt.Println("Part 1: ", sum)
+
+	// part 2
+	gears := getGears(numbers, symbols)
+	sum = 0
+	for _, gear := range gears {
+		val := gear[0].Value * gear[1].Value
+		sum += val
+	}
+	fmt.Println("Part 2: ", sum)
 }
