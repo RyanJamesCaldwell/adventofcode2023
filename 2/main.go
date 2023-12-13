@@ -83,6 +83,7 @@ func buildGames(lines []string) []Game {
 }
 
 func main() {
+	// Part 1
 	lines := fileReader.GetLines()
 	games := buildGames(lines)
 	theoreticalGame := Game{Red: 12, Green: 13, Blue: 14}
@@ -92,5 +93,19 @@ func main() {
 	for _, game := range possibleGames {
 		idSum += game.ID
 	}
-	fmt.Println("Sum: ", idSum)
+	fmt.Println("Part 1: ", idSum)
+
+	// Part 2
+	powers := []int{}
+	for _, game := range games {
+		power := game.Blue * game.Green * game.Red
+		powers = append(powers, power)
+	}
+
+	powerSum := 0
+	for _, val := range powers {
+		powerSum += val
+	}
+
+	fmt.Println("Part 2: ", powerSum)
 }
