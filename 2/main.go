@@ -22,8 +22,41 @@ func (g *Game) Total() int {
 func lineToGame(line string) Game {
 	var game Game
 	game.ID = getGameIdFromLine(line)
+	game.Red = getMaxColorCountFromLine(line, "red")
+	game.Blue = getMaxColorCountFromLine(line, "blue")
+	game.Green = getMaxColorCountFromLine(line, "green")
 
 	return game
+}
+
+func getMaxColorCountFromLine(line string, color string) int {
+	colorRegex := regexp.MustCompile(`\d+ ` + color)
+	stringMatches := colorRegex.FindAllString(line, -1) // e.g. [4 red, 3 red]
+
+	max := -1
+
+	for _, val := range stringMatches {
+		intRegex := regexp.MustCompile(`\d+`)
+		countStr := intRegex.FindString(val)
+		countInt, _ := strconv.Atoi(countStr)
+		if countInt > max {
+			max = countInt
+		}
+	}
+
+	return max
+}
+
+func possibleGames(games []Game, theoreticalGame Game) []Game {
+	possibles := []Game{}
+
+	for _, game := range games {
+		if game.Blue <= theoreticalGame.Blue && game.Red <= theoreticalGame.Red && game.Green <= theoreticalGame.Green {
+			possibles = append(possibles, game)
+		}
+	}
+
+	return possibles
 }
 
 func getGameIdFromLine(line string) int {
@@ -35,11 +68,8 @@ func getGameIdFromLine(line string) int {
 	return intId
 }
 
-func (g *Game) PopulateFromLine(line string) {
-}
-
 func (g *Game) String() string {
-	return fmt.Sprintf("Game %d: %d, %d, %d", g.ID, g.Blue, g.Green, g.Red)
+	return fmt.Sprintf("Game %d: %d blue, %d green, %d red", g.ID, g.Blue, g.Green, g.Red)
 }
 
 func buildGames(lines []string) []Game {
@@ -55,8 +85,12 @@ func buildGames(lines []string) []Game {
 func main() {
 	lines := fileReader.GetLines()
 	games := buildGames(lines)
+	theoreticalGame := Game{Red: 12, Green: 13, Blue: 14}
+	possibleGames := possibleGames(games, theoreticalGame)
 
-	for _, game := range games {
-		fmt.Println(game.String())
+	idSum := 0
+	for _, game := range possibleGames {
+		idSum += game.ID
 	}
+	fmt.Println("Sum: ", idSum)
 }
