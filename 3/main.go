@@ -3,14 +3,13 @@ package main
 import (
 	"fmt"
 	"regexp"
-	"slices"
 	"strconv"
 	"strings"
 
 	"github.com/ryanjamescaldwell/adventofcode2023/fileReader"
 )
 
-var symbols = []string{"*", "#", "$", "+"}
+var symbols = []string{"*", "#", "$", "+", "%", "-", "=", "@", "&", "/"}
 
 type Number struct {
 	StartIdx int
@@ -38,6 +37,7 @@ func getNumbers(lines []string) []Number {
 
 			number := Number{StartIdx: startIdx, EndIdx: startIdx + len(val) - 1, RowIdx: rowIdx, Value: intNumber}
 			numbers = append(numbers, number)
+			line = strings.Replace(line, val, strings.Repeat(".", len(val)), 1)
 		}
 	}
 
@@ -49,7 +49,7 @@ func findSymbols(lines []string) []Symbol {
 
 	for rowIdx, line := range lines {
 		for colIdx, char := range line {
-			if slices.Contains(symbols, string(char)) {
+			if isNaN(string(char)) && string(char) != "." {
 				sym := Symbol{RowIdx: rowIdx, ColIdx: colIdx, Value: string(char)}
 				foundSymbols = append(foundSymbols, sym)
 			}
@@ -59,10 +59,43 @@ func findSymbols(lines []string) []Symbol {
 	return foundSymbols
 }
 
+func isNaN(char string) bool {
+	_, err := strconv.Atoi(char)
+	return err != nil
+}
+
 func getPartNumbers(nums []Number, syms []Symbol) []Number {
 	partNumbers := []Number{}
 
+	for _, num := range nums {
+		if num.DoesBorderSymbol(syms) {
+			partNumbers = append(partNumbers, num)
+		}
+	}
+
 	return partNumbers
+}
+
+func (n *Number) DoesBorderSymbol(syms []Symbol) bool {
+	for _, sym := range syms {
+		for i := n.StartIdx; i <= n.EndIdx; i++ {
+			if abs(n.RowIdx-sym.RowIdx) <= 1 && abs(i-sym.ColIdx) <= 1 {
+				return true
+			}
+		}
+		// Check if the symbol is directly above or below a singular number
+		if n.StartIdx == n.EndIdx && abs(sym.RowIdx-n.RowIdx) == 1 && sym.ColIdx == n.StartIdx {
+			return true
+		}
+	}
+	return false
+}
+
+func abs(x int) int {
+	if x < 0 {
+		return -x
+	}
+	return x
 }
 
 func (n *Number) String() string {
@@ -81,7 +114,9 @@ func main() {
 	// numbers adjacent to a symbol
 	partNumbers := getPartNumbers(numbers, symbols)
 
+	sum := 0
 	for _, num := range partNumbers {
-		fmt.Println(num.String())
+		sum += num.Value
 	}
+	fmt.Println("Part 1: ", sum)
 }
