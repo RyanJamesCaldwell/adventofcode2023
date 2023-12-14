@@ -94,11 +94,21 @@ func main() {
 	fmt.Println("Part 1: ", points)
 
 	// part 2
+	// { cardID: count_winning_numbers, ... }
+	// { 1: 3, 2: 4, ... }
+	cardsById := make(map[int]Card, len(cards))
 	for i := 0; i < len(cards); i++ {
-		cardValue := int(cards[i].CardValue(2))
-		if cardValue > 0 {
-			for j := cards[i].ID; j < cards[i].ID+cardValue+1; j++ {
-				cards = slices.Insert(cards, cards[j], i+1)
+		cardsById[cards[i].ID] = cards[i]
+	}
+	// add cards to list based on winning numbers
+	for i := 0; i < len(cards); i++ {
+		// e.g. if Card 1 has 3 winning numbers, append 2,3,4 to the list
+		card := cardsById[cards[i].ID]
+		winCount := int(card.CardValue(2))
+
+		if winCount > 0 {
+			for j := 1; j <= winCount; j++ {
+				cards = append(cards, cardsById[card.ID+j])
 			}
 		}
 	}
