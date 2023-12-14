@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -19,8 +21,19 @@ func (c *Card) String() string {
 	return fmt.Sprintf("Card ID %d, Numbers: %v, Winning Numbers: %v", c.ID, c.Numbers, c.WinningNumbers)
 }
 
-func (c *Card) CardValue() int {
-	return 0
+func (c *Card) CardValue(part int) float64 {
+	winCount := 0
+	for _, num := range c.WinningNumbers {
+		if slices.Contains(c.Numbers, num) {
+			winCount++
+		}
+	}
+
+	if winCount <= 2 {
+		return float64(winCount)
+	} else {
+		return math.Pow(2, float64(winCount-1))
+	}
 }
 
 func getCards(lines []string) []Card {
@@ -28,10 +41,36 @@ func getCards(lines []string) []Card {
 
 	for _, line := range lines {
 		newCard := Card{}
+
+		// card id
 		regex := regexp.MustCompile(`\s+\d+`)
-		cardNumberStr := strings.TrimSpace(regex.FindString(line))
-		cardNumber, _ := strconv.Atoi(cardNumberStr)
-		newCard.ID = cardNumber
+		cardIDStr := strings.TrimSpace(regex.FindString(line))
+		cardID, _ := strconv.Atoi(cardIDStr)
+		newCard.ID = cardID
+
+		// winning card numbers
+		regex = regexp.MustCompile(`:\s+\d+.*\|`)
+		winningCardNumbersStr := regex.FindString(line)
+		winningCardNumbers := strings.Split(strings.NewReplacer(":", "", "|", "").Replace(winningCardNumbersStr), " ")
+		for _, c := range winningCardNumbers {
+			number, err := strconv.Atoi(c)
+			if err != nil {
+				continue
+			}
+			newCard.WinningNumbers = append(newCard.WinningNumbers, number)
+		}
+
+		// actual numbers for card
+		regex = regexp.MustCompile(`\|\s+\d+.*`)
+		numbersStr := regex.FindString(line)
+		numbers := strings.Split(strings.NewReplacer("|", "").Replace(numbersStr), " ")
+		for _, c := range numbers {
+			number, err := strconv.Atoi(c)
+			if err != nil {
+				continue
+			}
+			newCard.Numbers = append(newCard.Numbers, number)
+		}
 
 		cards = append(cards, newCard)
 	}
@@ -42,7 +81,11 @@ func getCards(lines []string) []Card {
 func main() {
 	lines := fileReader.GetLines()
 	cards := getCards(lines)
+
+	// part 1
+	points := 0.0
 	for _, card := range cards {
-		fmt.Println(card.String())
+		points += card.CardValue(1)
 	}
+	fmt.Println("Part 1: ", points)
 }
