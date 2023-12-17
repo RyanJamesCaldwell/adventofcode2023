@@ -21,6 +21,21 @@ func getSeeds(lines []string) []int {
 	return seeds
 }
 
+func getPart2Seeds(seeds []int) []int {
+	newSeeds := []int{}
+
+	for i := 0; i < len(seeds); i += 2 {
+		rangeStart := seeds[i]
+		rangeLength := seeds[i+1]
+
+		for j := rangeStart; j < rangeStart+rangeLength; j++ {
+			newSeeds = append(newSeeds, j)
+		}
+	}
+
+	return newSeeds
+}
+
 type Mapper struct {
 	Name     string
 	FromType string
@@ -124,4 +139,12 @@ func main() {
 	// Part 1
 	results := traverseMappersForSeedLocations(seeds, mappers)
 	fmt.Println("Part 1: ", getMinValue(results))
+
+	// Part 2
+	// D'oh! Seeds are actually defined in pairs, e.g. start_value + (range_length - 1) => 90 5 = 90, 91, 92, 93, 94
+	// Brute force because absolutely fucking not. Got the result in ~7 minutes, which is faster than I would've spent
+	// coming up with some highly optimized reverse-search / range splitting solution.
+	p2Seeds := getPart2Seeds(seeds)
+	results = traverseMappersForSeedLocations(p2Seeds, mappers)
+	fmt.Println("Part 2: ", getMinValue(results))
 }
