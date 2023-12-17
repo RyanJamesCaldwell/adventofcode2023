@@ -59,6 +59,28 @@ func getRaces(lines []string) []Race {
 	return races
 }
 
+// There's actually only one race, silly us
+func getPart2Race(lines []string) Race {
+	newRace := Race{}
+
+	timesInMsStr := strings.ReplaceAll(strings.Split(lines[0], ":")[1], " ", "")
+	distancesStr := strings.ReplaceAll(strings.Split(lines[1], ":")[1], " ", "")
+
+	ms, err := strconv.Atoi(timesInMsStr)
+	if err != nil {
+		panic("Couldn't convert str to int")
+	}
+	newRace.Milliseconds = ms
+
+	distance, err := strconv.Atoi(distancesStr)
+	if err != nil {
+		panic("Couldn't convert str to int")
+	}
+	newRace.Distance = distance
+
+	return newRace
+}
+
 func product(nums []int) int {
 	total := 1
 	for _, num := range nums {
@@ -98,4 +120,15 @@ func main() {
 	}
 
 	fmt.Println("Part 1: ", product(winningCountsPerRace))
+
+	// Part 2
+	race := getPart2Race(lines)
+	races = []Race{race}
+	strats = getWinnableRaceStrategies(races)
+	winningCountsPerRace = []int{}
+	for _, count := range strats {
+		winningCountsPerRace = append(winningCountsPerRace, count)
+	}
+
+	fmt.Println("Part 2: ", product(winningCountsPerRace))
 }
