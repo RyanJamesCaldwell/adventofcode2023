@@ -43,11 +43,37 @@ func getNetwork(lines []string) Network {
 	return network
 }
 
+func totalHopsToNavigateNetwork(network Network) int {
+	hops := 0
+	currentNode := network.Schema["AAA"]
+
+	for i := 0; i < len(network.Instructions); i++ {
+		instruction := network.Instructions[i]
+
+		if instruction == "R" {
+			currentNode = network.Schema[currentNode.Right]
+		} else {
+			currentNode = network.Schema[currentNode.Left]
+		}
+		hops++
+
+		if currentNode.Key == "ZZZ" {
+			return hops
+		}
+
+		// if we still haven't found the node we're looking for,
+		// we need to repeat the instructions
+		if i+1 >= len(network.Instructions) {
+			i = -1 // -1 because the loop will increment it
+		}
+	}
+
+	return hops
+}
+
 func main() {
 	lines := fileReader.GetLines()
 	network := getNetwork(lines)
 
-	for _, node := range network.Schema {
-		fmt.Println(node.String())
-	}
+	fmt.Println("Part 1: ", totalHopsToNavigateNetwork(network))
 }
