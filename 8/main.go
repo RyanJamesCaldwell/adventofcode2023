@@ -32,7 +32,7 @@ func getNetwork(lines []string) Network {
 
 	for _, line := range lines[2:] {
 		key := line[0:3]
-		regex := regexp.MustCompile(`([A-Z]{3}), ([A-Z]{3})`)
+		regex := regexp.MustCompile(`([A-Z0-9]{3}), ([A-Z0-9]{3})`)
 		tuple := regex.FindString(line)
 
 		node := Node{Key: key}
@@ -43,9 +43,9 @@ func getNetwork(lines []string) Network {
 	return network
 }
 
-func totalHopsToNavigateNetwork(network Network) int {
+func totalHopsToNavigateNetwork(network Network, startNode Node) int {
 	hops := 0
-	currentNode := network.Schema["AAA"]
+	currentNode := startNode
 
 	for i := 0; i < len(network.Instructions); i++ {
 		instruction := network.Instructions[i]
@@ -57,7 +57,7 @@ func totalHopsToNavigateNetwork(network Network) int {
 		}
 		hops++
 
-		if currentNode.Key == "ZZZ" {
+		if strings.HasSuffix(currentNode.Key, "Z") {
 			return hops
 		}
 
@@ -71,9 +71,55 @@ func totalHopsToNavigateNetwork(network Network) int {
 	return hops
 }
 
+func getStartNodes(network Network) []Node {
+	startNodes := []Node{}
+
+	for _, node := range network.Schema {
+		if strings.HasSuffix(node.Key, "A") {
+			startNodes = append(startNodes, node)
+		}
+	}
+
+	return startNodes
+}
+
+func totalHopsToNavigateNetworkConcurrently(network Network, startNodes []Node) int {
+	nodeHops := []int{}
+	for _, startNode := range startNodes {
+		nodeHops = append(nodeHops, totalHopsToNavigateNetwork(network, startNode))
+	}
+
+	return LCM(nodeHops[0], nodeHops[1], nodeHops[2:]...)
+}
+
+// greatest common divisor (GCD) via Euclidean algorithm
+func GCD(a, b int) int {
+	for b != 0 {
+		t := b
+		b = a % b
+		a = t
+	}
+	return a
+}
+
+// find Least Common Multiple (LCM) via GCD
+func LCM(a, b int, integers ...int) int {
+	result := a * b / GCD(a, b)
+
+	for i := 0; i < len(integers); i++ {
+		result = LCM(result, integers[i])
+	}
+
+	return result
+}
+
 func main() {
 	lines := fileReader.GetLines()
 	network := getNetwork(lines)
 
-	fmt.Println("Part 1: ", totalHopsToNavigateNetwork(network))
+	// fmt.Println("Part 1: ", totalHopsToNavigateNetwork(network))
+
+	// Part 2
+	startNodes := getStartNodes(network)
+	fmt.Println("Part 2: ", totalHopsToNavigateNetworkConcurrently(network, startNodes))
 }
